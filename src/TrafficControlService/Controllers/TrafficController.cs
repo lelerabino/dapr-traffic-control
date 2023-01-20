@@ -46,7 +46,8 @@ public class TrafficController : ControllerBase
                 $"of vehicle with license-number {msg.LicenseNumber}.");
 
             // Save store vehicle state
-            // TODO
+            var state = new VehicleState(msg.LicenseNumber, msg.Timestamp);
+            await _vehicleStateRepository.SaveVehicleStateAsync(state);
 
             return Ok();
         }
@@ -64,6 +65,11 @@ public class TrafficController : ControllerBase
         {
             // get vehicle state
             // TODO
+            var state = await _vehicleStateRepository.GetVehicleStateAsync(msg.LicenseNumber);
+            if (state == default(VehicleState))
+            {
+                return NotFound();
+            }
 
             // log exit
             _logger.LogInformation($"EXIT detected in lane {msg.Lane} at {msg.Timestamp.ToString("hh:mm:ss")} " +
@@ -71,6 +77,8 @@ public class TrafficController : ControllerBase
 
             // update state with the correct exit timestamp
             // TODO
+            var exitState = state.Value with { ExitTimestamp = msg.Timestamp };
+            await _vehicleStateRepository.SaveVehicleStateAsync(exitState);
 
             // handle possible speeding violation
             int violation = _speedingViolationCalculator.DetermineSpeedingViolationInKmh(exitState.EntryTimestamp, exitState.ExitTimestamp.Value);
@@ -88,7 +96,7 @@ public class TrafficController : ControllerBase
                 };
 
                 // publish speedingviolation (Dapr publish / subscribe)
-                // TODO
+                await daprClient.PublishEventAsync("pubsub", "speedingviolations", speedingViolation);
             }
 
             return Ok();

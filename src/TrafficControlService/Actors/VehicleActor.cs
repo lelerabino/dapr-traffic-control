@@ -47,6 +47,7 @@ public class VehicleActor : Actor, IVehicleActor, IRemindable
 
             // get vehicle state
             // TODO
+            var vehicleState = new VehicleState("",DateTime.Now);
 
             // handle possible speeding violation
             int violation = _speedingViolationCalculator.DetermineSpeedingViolationInKmh(
@@ -83,6 +84,7 @@ public class VehicleActor : Actor, IVehicleActor, IRemindable
 
             // get vehicle state
             // TODO
+            var vehicleState = new VehicleState("",DateTime.Now);
 
             Logger.LogInformation($"Lost track of vehicle with license-number {vehicleState.LicenseNumber}. " +
                 "Sending road-assistence.");
